@@ -8,11 +8,33 @@ and visualizing eye gaze data from experiments.
 """
 
 import os
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-# Use try-except blocks for plotly imports to handle potential import errors
+import json
+from datetime import datetime
+
+# Handle potentially missing packages with graceful degradation
+try:
+    import numpy as np
+    NUMPY_AVAILABLE = True
+except ImportError:
+    print("Warning: NumPy not available. Basic functionality will be limited.")
+    NUMPY_AVAILABLE = False
+
+try:
+    import pandas as pd
+    PANDAS_AVAILABLE = True
+except ImportError:
+    print("Warning: Pandas not available. Data loading and processing will be limited.")
+    PANDAS_AVAILABLE = False
+
+try:
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    MATPLOTLIB_AVAILABLE = True
+except ImportError:
+    print("Warning: Matplotlib/Seaborn not available. Static visualizations will be disabled.")
+    MATPLOTLIB_AVAILABLE = False
+
+# Handle plotly imports
 try:
     import plotly.express as px
     import plotly.graph_objects as go
@@ -21,13 +43,27 @@ try:
 except ImportError:
     print("Warning: Plotly not fully available. Interactive visualizations will be disabled.")
     PLOTLY_AVAILABLE = False
-from sklearn.cluster import DBSCAN
-from scipy.stats import gaussian_kde
-from scipy.spatial import ConvexHull
-from tqdm import tqdm
-import statsmodels.api as sm
-import json
-from datetime import datetime
+
+# Additional scientific packages
+try:
+    from sklearn.cluster import DBSCAN
+    from scipy.stats import gaussian_kde
+    from scipy.spatial import ConvexHull
+    import statsmodels.api as sm
+    SCIENTIFIC_PACKAGES_AVAILABLE = True
+except ImportError:
+    print("Warning: Some scientific packages not available. Advanced analysis will be limited.")
+    SCIENTIFIC_PACKAGES_AVAILABLE = False
+
+try:
+    from tqdm import tqdm
+    TQDM_AVAILABLE = True
+except ImportError:
+    print("Warning: tqdm not available. Progress bars will be disabled.")
+    TQDM_AVAILABLE = False
+    # Create a simple replacement for tqdm that does nothing
+    def tqdm(iterable, **kwargs):
+        return iterable
 
 class GazeDataAnalyzer:
     """
