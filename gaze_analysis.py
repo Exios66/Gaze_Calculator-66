@@ -547,9 +547,14 @@ class GazeDataAnalyzer:
             
         Returns:
         --------
-        plotly.graph_objects.Figure
-            The interactive figure
+        plotly.graph_objects.Figure or None
+            The interactive figure if Plotly is available, None otherwise
         """
+        if not PLOTLY_AVAILABLE:
+            print("Interactive visualization not available: Plotly package not fully installed.")
+            print("Install with: pip install plotly==5.15.0 --upgrade")
+            return None
+            
         if participant_id not in self.processed_data:
             self.preprocess_data(participant_id)
             
@@ -681,7 +686,12 @@ class GazeDataAnalyzer:
         # Generate all visualizations
         self.plot_gaze_path(participant_id, show=False)
         self.plot_heatmap(participant_id, show=False)
-        self.generate_interactive_visualization(participant_id)
+        
+        # Only generate interactive visualization if Plotly is available
+        has_interactive = False
+        if PLOTLY_AVAILABLE:
+            self.generate_interactive_visualization(participant_id)
+            has_interactive = True
         
         # Create report filename
         now = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -706,8 +716,14 @@ class GazeDataAnalyzer:
             f.write(f"![Gaze Path]({participant_id}_gaze_path.png)\n\n")
             f.write("### Heatmap\n\n")
             f.write(f"![Heatmap]({participant_id}_heatmap.png)\n\n")
-            f.write("### Interactive Visualization\n\n")
-            f.write(f"[Open Interactive Visualization]({participant_id}_interactive.html)\n\n")
+            
+            # Only include interactive visualization link if available
+            if has_interactive:
+                f.write("### Interactive Visualization\n\n")
+                f.write(f"[Open Interactive Visualization]({participant_id}_interactive.html)\n\n")
+            else:
+                f.write("### Interactive Visualization\n\n")
+                f.write("*Interactive visualization not available (Plotly package not fully installed)*\n\n")
             
         print(f"Report generated at {report_file}")
         return report_file
@@ -760,7 +776,10 @@ def main():
             # Generate visualizations
             analyzer.plot_gaze_path(participant_id, show=False)
             analyzer.plot_heatmap(participant_id, show=False)
-            analyzer.generate_interactive_visualization(participant_id)
+            
+            # Only attempt interactive visualization if Plotly is available
+            if PLOTLY_AVAILABLE:
+                analyzer.generate_interactive_visualization(participant_id)
             
             # Generate report
             analyzer.generate_report(participant_id)
